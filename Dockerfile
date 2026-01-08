@@ -1,12 +1,15 @@
-FROM node:24
-
+# Stage 1: Build the Angular application
+FROM node:alpine AS build
 WORKDIR /app
-
-COPY . .
+COPY package*.json ./
 RUN npm install
-RUN npm run build 
+COPY . .
+RUN npm run build --prod
 
-# FROM httpd:alphine3.15
-
-# WORKDIR /usr/local/apache2/htdocs
-# COPY --from=angular /app/dist/basic1 .
+# Stage 2: Serve the application with NGINX
+FROM nginx:alpine
+COPY --from=build /app/dist/your-app-name /usr/share/nginx/html
+# Optional: copy a custom NGINX config file
+# COPY nginx.conf /etc/nginx/nginx.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
